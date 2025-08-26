@@ -17,6 +17,31 @@ namespace IceCreamSalesReport.Services
             var salesRecords = await GetSalesRecordsAsync();
             return salesRecords.Sum(record => record.TotalPrice);
         }
+
+        public async Task<List<MonthlySalesTotal>> GetMonthlySalesTotalAsync()
+        {
+            var monthWiseTotals = new Dictionary<string, decimal>();
+            var salesRecords = await GetSalesRecordsAsync();
+
+            foreach (var sale in salesRecords)
+            {
+                // assuming that the sales data might contains diffrent year, currently its only 2019
+                string monthKey = sale.Date.ToString("yyyy-MM");
+
+                if (!monthWiseTotals.ContainsKey(monthKey))
+                    monthWiseTotals[monthKey] = 0;
+
+                monthWiseTotals[monthKey] += sale.TotalPrice;
+            }
+
+            return monthWiseTotals.Select(x => new MonthlySalesTotal
+            {
+                Month = x.Key,
+                TotalSales = x.Value
+
+            }).ToList();
+        }
+
         public async Task<List<SalesRecord>> GetSalesRecordsAsync()
         {
             var sales = new List<SalesRecord>();

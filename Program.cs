@@ -3,4 +3,8 @@ using IceCreamSalesReport.Services;
 
 var salesService = new IceCreamSalesReportService(AppSettings.SalesReportPath);
 
-var a = await salesService.GetSalesRecordsAsync();
+
+var totalSales = await salesService.GetTotalSalesAsync();
+
+var monthlySalesTotal = await salesService.GetMonthlySalesTotalAsync();
+var number = 1;
