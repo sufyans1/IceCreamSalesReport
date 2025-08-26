@@ -1,2 +1,6 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using IceCreamSalesReport.Helper;
+using IceCreamSalesReport.Services;
+
+var salesService = new IceCreamSalesReportService(AppSettings.SalesReportPath);
+
+var a = await salesService.GetSalesRecordsAsync();
