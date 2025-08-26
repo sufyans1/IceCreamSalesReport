@@ -11,6 +11,12 @@ namespace IceCreamSalesReport.Services
         }
 
 
+
+        public async Task<decimal> GetTotalSalesAsync()
+        {
+            var salesRecords = await GetSalesRecordsAsync();
+            return salesRecords.Sum(record => record.TotalPrice);
+        }
         public async Task<List<SalesRecord>> GetSalesRecordsAsync()
         {
             var sales = new List<SalesRecord>();
