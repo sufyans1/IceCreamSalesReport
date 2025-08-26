@@ -18,6 +18,43 @@ namespace IceCreamSalesReport.Services
             return salesRecords.Sum(record => record.TotalPrice);
         }
 
+        public async Task<List<MonthlyItemSalesTotal>> GetMonthlyTopItemSalesTotalAsync()
+        {
+            var monthlyItemSalesTotal = new Dictionary<string, Dictionary<string, decimal>>();
+            var salesRecords = await GetSalesRecordsAsync();
+
+            foreach (var sale in salesRecords)
+            {
+                string monthKey = sale.Date.ToString("yyyy-MM");
+
+                if (!monthlyItemSalesTotal.ContainsKey(monthKey))
+                    monthlyItemSalesTotal[monthKey] = new Dictionary<string, decimal>();
+
+                if (!monthlyItemSalesTotal[monthKey].ContainsKey(sale.SKU))
+                    monthlyItemSalesTotal[monthKey][sale.SKU] = 0;
+
+                monthlyItemSalesTotal[monthKey][sale.SKU] += sale.TotalPrice;
+            }
+
+            var monthlyTopItemSalesTotal = new List<MonthlyItemSalesTotal>();
+
+            foreach (var month in monthlyItemSalesTotal.Keys)
+            {
+                var topSalesItem = monthlyItemSalesTotal[month]
+                    .OrderByDescending(kvp => kvp.Value)
+                    .First();
+
+                monthlyTopItemSalesTotal.Add(new MonthlyItemSalesTotal
+                {
+                    Month = month,
+                    Sku = topSalesItem.Key,
+                    TotalSales = topSalesItem.Value
+                });
+            }
+
+            return monthlyTopItemSalesTotal;
+        }
+
         public async Task<List<MonthlySalesTotal>> GetMonthlySalesTotalAsync()
         {
             var monthWiseTotals = new Dictionary<string, decimal>();
