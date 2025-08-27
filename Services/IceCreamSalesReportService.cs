@@ -165,7 +165,7 @@ namespace IceCreamSalesReport.Services
             }).ToList();
         }
 
-        public async Task<List<SalesRecord>> GetSalesRecordsAsync()
+        private async Task<List<SalesRecord>> GetSalesRecordsAsync()
         {
             var sales = new List<SalesRecord>();
 
