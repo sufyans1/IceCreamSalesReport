@@ -10,5 +10,6 @@ var monthlySalesTotal = await salesService.GetMonthlySalesTotalAsync();
 
 var monthlyTopItemSalesTotal = await salesService.GetMonthlyTopItemSalesTotalAsync();
 
+var monnthlyTopItemStats = await salesService.GetMonthlyPopularItemStats();
 
 var number = 1;

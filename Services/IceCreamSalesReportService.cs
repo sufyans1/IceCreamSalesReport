@@ -23,6 +23,76 @@ namespace IceCreamSalesReport.Services
             return total;
         }
 
+        public async Task<List<MonthlyPopularItemStats>> GetMonthlyPopularItemStats()
+        {
+            var sales = await GetSalesRecordsAsync();
+            var monthlyPopularItemStats = new List<MonthlyPopularItemStats>();
+
+            var monthlySales = new Dictionary<string, List<SalesRecord>>();
+            foreach (var record in sales)
+            {
+                string month = record.Date.ToString("yyyy-MM");
+                if (!monthlySales.ContainsKey(month))
+                    monthlySales[month] = new List<SalesRecord>();
+                monthlySales[month].Add(record);
+            }
+
+
+            foreach (var month in monthlySales.Keys)
+            {
+                var itemTotals = new Dictionary<string, int>();
+
+                string topSku = string.Empty;
+                int topQuantity = int.MinValue;
+
+                foreach (var record in monthlySales[month])
+                {
+                    if (!itemTotals.ContainsKey(record.Sku))
+                        itemTotals[record.Sku] = 0;
+
+                    itemTotals[record.Sku] += record.Quantity;
+
+                    if (itemTotals[record.Sku] > topQuantity)
+                    {
+                        topQuantity = itemTotals[record.Sku];
+                        topSku = record.Sku;
+                    }
+                }
+
+
+                int minimumOrder = monthlySales[month][0].Quantity;
+                int maximumOrder = monthlySales[month][0].Quantity;
+                int totalOrders = 0;
+                int totalUnits = 0;
+
+                foreach (var record in monthlySales[month])
+                {
+                    if (record.Sku == topSku)
+                    {
+                        int qty = record.Quantity;
+                        if (qty < minimumOrder) minimumOrder = qty;
+                        if (qty > maximumOrder) maximumOrder = qty;
+                        totalUnits += qty;
+                        totalOrders++;
+                    }
+                }
+
+                double averageOrder = totalOrders > 0 ? (double)totalUnits / totalOrders : 0;
+
+                monthlyPopularItemStats.Add(new MonthlyPopularItemStats
+                {
+                    Month = month,
+                    Sku = topSku,
+                    TotalQuantity = topQuantity,
+                    MinimumOrder = minimumOrder,
+                    MaximumOrder = maximumOrder,
+                    AverageOrder = averageOrder
+                });
+            }
+
+            return monthlyPopularItemStats;
+        }
+
         public async Task<List<MonthlyItemSalesTotal>> GetMonthlyTopItemSalesTotalAsync()
         {
             var monthlyItemSalesTotal = new Dictionary<string, Dictionary<string, decimal>>();
@@ -35,10 +105,10 @@ namespace IceCreamSalesReport.Services
                 if (!monthlyItemSalesTotal.ContainsKey(monthKey))
                     monthlyItemSalesTotal[monthKey] = new Dictionary<string, decimal>();
 
-                if (!monthlyItemSalesTotal[monthKey].ContainsKey(sale.SKU))
-                    monthlyItemSalesTotal[monthKey][sale.SKU] = 0;
+                if (!monthlyItemSalesTotal[monthKey].ContainsKey(sale.Sku))
+                    monthlyItemSalesTotal[monthKey][sale.Sku] = 0;
 
-                monthlyItemSalesTotal[monthKey][sale.SKU] += sale.TotalPrice;
+                monthlyItemSalesTotal[monthKey][sale.Sku] += sale.TotalPrice;
             }
 
             var monthlyTopItemSalesTotal = new List<MonthlyItemSalesTotal>();
@@ -113,7 +183,7 @@ namespace IceCreamSalesReport.Services
                 sales.Add(new SalesRecord
                 {
                     Date = DateTime.Parse(parts[0]),
-                    SKU = parts[1].Trim(),
+                    Sku = parts[1].Trim(),
                     UnitPrice = decimal.Parse(parts[2]),
                     Quantity = int.Parse(parts[3]),
                     TotalPrice = decimal.Parse(parts[4])
