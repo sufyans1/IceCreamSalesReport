@@ -45,15 +45,26 @@ namespace IceCreamSalesReport.Services
 
             foreach (var month in monthlyItemSalesTotal.Keys)
             {
-                var topSalesItem = monthlyItemSalesTotal[month]
-                    .OrderByDescending(kvp => kvp.Value)
-                    .First();
+                var items = monthlyItemSalesTotal[month];
+
+                string topSku = string.Empty;
+                decimal topValue = decimal.MinValue;
+
+                foreach (var item in items)
+                {
+                    if (item.Value > topValue)
+                    {
+                        topValue = item.Value;
+                        topSku = item.Key;
+                    }
+                }
+
 
                 monthlyTopItemSalesTotal.Add(new MonthlyItemSalesTotal
                 {
                     Month = month,
-                    Sku = topSalesItem.Key,
-                    TotalSales = topSalesItem.Value
+                    Sku = topSku,
+                    TotalSales = topValue
                 });
             }
 
